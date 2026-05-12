@@ -20,9 +20,15 @@ public class ProductController {
     @GetMapping("/products")
     public PagedResponse<Product> getAllProducts(@RequestParam(defaultValue = "0") int page,
                                                  @RequestParam(defaultValue = "5") int size,
+                                                 @RequestParam(defaultValue = "id, asc") String[] sort,
                                                  @RequestParam(required = false) String category,
                                                  @RequestParam(required = false) String brand){
-        Pageable pageable = PageRequest.of(page, size);
+        //Handle sorting field and direction
+        String sortField = sort[0];
+        Sort.Direction direction = (sort.length > 1 && sort[1].equalsIgnoreCase("desc"))?
+                Sort.Direction.DESC
+                : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortField));
         Page<Product> productsPage = productService.getAllProducts(category,brand, pageable);
         return new PagedResponse<Product>(
                 productsPage.getContent(),
@@ -33,4 +39,6 @@ public class ProductController {
                 productsPage.isLast()
         );
     }
+
+
 }
